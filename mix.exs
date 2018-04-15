@@ -35,7 +35,7 @@ defmodule Tidy.MixProject do
 
   defp package do
     [
-      name: :loggex,
+      name: :tidy,
       maintainers: ["Ian Luites"],
       licenses: ["MIT"],
       files: ~w(.formatter.exs mix.exs README.md LICENSE lib),
@@ -50,6 +50,6 @@ defmodule Tidy.MixProject do
   end
 
   defp deps do
-    []
+    [{:ex_doc, ">= 0.0.0", only: :dev}]
   end
 end

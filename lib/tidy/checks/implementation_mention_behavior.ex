@@ -21,7 +21,7 @@ defmodule Tidy.Checks.ImplementationMentionBehavior do
   @impl Tidy.Check
   def check(%Function{type: :derived}, _opts), do: :ok
 
-  def check(%Function{impl: true}, opts) do
+  def check(%Function{impl: true}, _opts) do
     {:error, "@impl should mention behavior not just `true`.",
      """
      There are two ways to indicate a function is a behavior implementation.
