@@ -7,8 +7,14 @@ defmodule Tidy.Inspection do
 
       doc =
         case Code.get_docs(module, :moduledoc) do
-          {_, doc} -> doc
-          _ -> nil
+          {:docs_v1, _, _, _,
+           %{
+             "en" => doc
+           }, %{}, _} ->
+            doc
+
+          _ ->
+            nil
         end
 
       type =
@@ -70,11 +76,16 @@ defmodule Tidy.Inspection do
 
   defp inspect_function(module, fun = {name, arity}, context) do
     {args, doc} =
-      with docs <- Code.get_docs(module, :docs),
-           {^fun, _line, :def, args, doc} <- List.keyfind(docs, fun, 0) do
-        {Enum.map(args, &parse_arg/1), doc}
+      with {:docs_v1, _, _, _, %{}, %{}, docs} <- Code.fetch_docs(module),
+           {{:function, _, ^arity}, _, _, %{"en" => doc}, %{}} <-
+             Enum.find(docs, &(elem(elem(&1, 0), 1) == name && elem(elem(&1, 0), 2) == arity)) do
+        {0..arity |> Enum.map(&"arg#{&1}") |> List.delete(0), doc}
       else
-        nil -> {:derived, nil}
+        {{:function, _, _}, _, _, :hidden, %{deprecated: doc}} ->
+          {0..arity |> Enum.map(&"arg#{&1}") |> List.delete(0), doc}
+
+        nil ->
+          {:derived, nil}
       end
 
     spec =
@@ -101,14 +112,6 @@ defmodule Tidy.Inspection do
       type: type,
       impl: Map.get(context.impl, {name, arity}, false)
     }
-  end
-
-  defp parse_arg({:\\, [], [{name, [], _}, default]}) do
-    %{name: name, default: default}
-  end
-
-  defp parse_arg({name, [], _}) do
-    %{name: name}
   end
 
   defp parse_type_spec(nil), do: nil
