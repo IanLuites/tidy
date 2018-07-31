@@ -6,12 +6,15 @@ defmodule Tidy.Inspection do
       attributes = module.__info__(:attributes)
 
       doc =
-        case Code.get_docs(module, :moduledoc) do
+        case Code.fetch_docs(module) do
           {:docs_v1, _, _, _,
            %{
              "en" => doc
            }, %{}, _} ->
             doc
+
+          {:docs_v1, _, _, _, :hidden, %{}, _} ->
+            false
 
           _ ->
             nil
@@ -76,13 +79,16 @@ defmodule Tidy.Inspection do
 
   defp inspect_function(module, fun = {name, arity}, context) do
     {args, doc} =
-      with {:docs_v1, _, _, _, %{}, %{}, docs} <- Code.fetch_docs(module),
+      with {:docs_v1, _, _, _, _, %{}, docs} <- Code.fetch_docs(module),
            {{:function, _, ^arity}, _, _, %{"en" => doc}, %{}} <-
              Enum.find(docs, &(elem(elem(&1, 0), 1) == name && elem(elem(&1, 0), 2) == arity)) do
         {0..arity |> Enum.map(&"arg#{&1}") |> List.delete(0), doc}
       else
-        {{:function, _, _}, _, _, :hidden, %{deprecated: doc}} ->
+        {{:function, _, _}, _, _, _, %{deprecated: doc}} ->
           {0..arity |> Enum.map(&"arg#{&1}") |> List.delete(0), doc}
+
+        {{:function, _, _}, _, _, :hidden, %{}} ->
+          {0..arity |> Enum.map(&"arg#{&1}") |> List.delete(0), false}
 
         nil ->
           {:derived, nil}
