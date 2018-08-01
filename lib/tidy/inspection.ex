@@ -80,15 +80,18 @@ defmodule Tidy.Inspection do
   defp inspect_function(module, fun = {name, arity}, context) do
     {args, doc} =
       with {:docs_v1, _, _, _, _, %{}, docs} <- Code.fetch_docs(module),
-           {{:function, _, ^arity}, _, _, %{"en" => doc}, %{}} <-
+           {{:function, _, ^arity}, _, signature, %{"en" => doc}, %{}} <-
              Enum.find(docs, &(elem(elem(&1, 0), 1) == name && elem(elem(&1, 0), 2) == arity)) do
-        {0..arity |> Enum.map(&"arg#{&1}") |> List.delete(0), doc}
+        {generate_arguments(signature), doc}
       else
-        {{:function, _, _}, _, _, _, %{deprecated: doc}} ->
-          {0..arity |> Enum.map(&"arg#{&1}") |> List.delete(0), doc}
+        {{:function, _, _}, _, signature, _, %{deprecated: doc}} ->
+          {generate_arguments(signature), doc}
 
-        {{:function, _, _}, _, _, :hidden, %{}} ->
-          {0..arity |> Enum.map(&"arg#{&1}") |> List.delete(0), false}
+        {{:function, _, _}, _, signature, :hidden, %{}} ->
+          {generate_arguments(signature), false}
+
+        {{:function, _, _}, _, signature, :none, %{}} ->
+          {generate_arguments(signature), nil}
 
         nil ->
           {:derived, nil}
@@ -118,6 +121,25 @@ defmodule Tidy.Inspection do
       type: type,
       impl: Map.get(context.impl, {name, arity}, false)
     }
+  end
+
+  defp generate_arguments(arity) when is_integer(arity) do
+    0..arity |> Enum.map(&%{name: "arg#{&1}"}) |> List.delete(0)
+  end
+
+  defp generate_arguments([signature]) when is_binary(signature) do
+    with [_, args] <- Regex.run(~r/.+\((.+)\)/, signature) do
+      args
+      |> String.split(~r/, ?/)
+      |> Enum.map(fn arg ->
+        case String.split(arg, ~r/ *\\\\ */) do
+          [name] -> %{name: name}
+          [name, default] -> %{name: name, default: default}
+        end
+      end)
+    else
+      _ -> []
+    end
   end
 
   defp parse_type_spec(nil), do: nil
