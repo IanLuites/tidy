@@ -82,6 +82,7 @@ defmodule Tidy.Impl do
   defp parse_annotation({:behaviour, _, behavior}) do
     case behavior do
       [{:__aliases__, _, m}] -> {:behavior, Module.concat(m)}
+      [atom] when is_atom(atom) -> {:behavior, atom}
     end
   end
 
@@ -89,6 +90,7 @@ defmodule Tidy.Impl do
     case impl do
       [{:__aliases__, _, m}] -> {:impl, Module.concat(m)}
       [true] -> {:impl, true}
+      [atom] when is_atom(atom) -> {:impl, atom}
     end
   end
 
