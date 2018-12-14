@@ -13,11 +13,17 @@ defmodule Tidy.Config do
   @config_file "./.tidy.exs"
 
   @default_ignore_functions [
+    __changeset__: 0,
+    __intercepts__: 0,
+    __phoenix_recompile__?: 0,
+    __protocol__: 1,
+    __resource__: 0,
+    __schema__: 1,
+    __schema__: 2,
+    __socket__: 1,
     __struct__: 0,
     __struct__: 1,
-    __changeset__: 0,
-    __schema__: 1,
-    __schema__: 2
+    __templates__: 0
   ]
 
   def load do
