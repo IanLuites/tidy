@@ -1,4 +1,5 @@
 defmodule Tidy.Inspection do
+  require Logger
   alias Tidy.{Module, Function}
 
   def inspect_module(module, config) do
@@ -157,6 +158,11 @@ defmodule Tidy.Inspection do
       in: [],
       out: []
     }
+  end
+
+  defp parse_type_spec(spec) do
+    Logger.warn(fn -> "Un-parsable spec: #{inspect(spec)}" end)
+    nil
   end
 
   defp parse_spec([type]), do: parse_spec(type)
