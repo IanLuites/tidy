@@ -81,6 +81,7 @@ defmodule Tidy.Inspection do
   defp inspect_function(module, fun = {name, arity}, context) do
     {args, doc} =
       with {:docs_v1, _, _, _, _, %{}, docs} <- Code.fetch_docs(module),
+           docs <- Enum.filter(docs, &(elem(elem(&1, 0), 0) == :function)),
            {{:function, _, ^arity}, _, signature, %{"en" => doc}, %{}} <-
              Enum.find(docs, &(elem(elem(&1, 0), 1) == name && elem(elem(&1, 0), 2) == arity)) do
         {generate_arguments(signature), doc}
