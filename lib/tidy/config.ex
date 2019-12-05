@@ -23,7 +23,11 @@ defmodule Tidy.Config do
     __socket__: 1,
     __struct__: 0,
     __struct__: 1,
-    __templates__: 0
+    __templates__: 0,
+    call: 2,
+    dispatch: 2,
+    init: 1,
+    match: 2
   ]
 
   def load do
