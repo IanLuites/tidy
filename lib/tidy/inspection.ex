@@ -130,6 +130,8 @@ defmodule Tidy.Inspection do
   end
 
   defp generate_arguments([signature]) when is_binary(signature) do
+    signature = String.replace(signature, ~r/\{[^\}]*\}/, "")
+
     with [_, args] <- Regex.run(~r/.+\((.+)\)/, signature) do
       args
       |> String.split(~r/, ?/)

@@ -9,7 +9,7 @@ by adding `tidy` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:tidy, "~> 0.0.1"}
+    {:tidy, "~> 0.1"}
   ]
 end
 ```
