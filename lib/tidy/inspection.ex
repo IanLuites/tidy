@@ -47,7 +47,6 @@ defmodule Tidy.Inspection do
     function_groups =
       :functions
       |> module.__info__()
-      |> Enum.reject(&(&1 in config.ignore.functions))
       |> Enum.map(&inspect_function(module, &1, context))
       |> Enum.group_by(&(&1.type == :derived))
 
@@ -75,6 +74,7 @@ defmodule Tidy.Inspection do
       |> Map.put(:args, Enum.take(parent.args, fun.arity))
     end)
     |> Kernel.++(original)
+    |> Enum.reject(&({&1.name, &1.arity} in config.ignore.functions))
     |> Enum.sort_by(& &1.name)
   end
 
