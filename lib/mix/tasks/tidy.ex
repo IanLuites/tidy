@@ -9,16 +9,23 @@ defmodule Mix.Tasks.Tidy do
     Mix.Task.run("compile")
 
     app =
-      ~r/app: *:(?<app>[a-z\_]+)/
-      |> Regex.named_captures(File.read!("./mix.exs"))
-      |> Map.get("app")
-      |> String.to_existing_atom()
-
-    Application.load(app)
+      ~r/app: *:([a-z\_]+)/
+      |> Regex.scan(File.read!("./mix.exs"), capture: :all_but_first)
+      |> Enum.find_value(&try_load/1)
 
     app
     |> Tidy.analyze_app()
     |> Enum.map(&Tidy.errors/1)
     |> IO.puts()
+  end
+
+  defp try_load(app)
+
+  defp try_load([app]) do
+    name = String.to_existing_atom(app)
+
+    if Application.ensure_loaded(name) == :ok, do: name
+  rescue
+    _ -> nil
   end
 end
