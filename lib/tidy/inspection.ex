@@ -95,6 +95,9 @@ defmodule Tidy.Inspection do
         {{:function, _, _}, _, signature, :none, %{}} ->
           {generate_arguments(signature), nil}
 
+        {{:function, _, _}, _, signature, %{}, %{}} ->
+          {generate_arguments(signature), false}
+
         nil ->
           {:derived, nil}
       end
